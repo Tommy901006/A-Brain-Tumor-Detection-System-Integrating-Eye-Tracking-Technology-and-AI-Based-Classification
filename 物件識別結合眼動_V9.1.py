@@ -82,7 +82,7 @@ engine.setProperty('rate', 150)
 
 # Roboflow API 設定
 API_KEY = "mx6cAQDaGAVyXhc80rEh"
-MODEL_ID = "rock-paper-scissors-sxsw/14"
+MODEL_ID = "axial-mri/1"
 API_URL = f"https://detect.roboflow.com/{MODEL_ID}?api_key={API_KEY}"
 
 # 建立標註器
