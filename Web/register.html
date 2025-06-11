@@ -1,0 +1,52 @@
+<!-- register.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>註冊｜Eye Tracking</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f9fd; margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; }
+    .auth-card { width: 320px; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .auth-card h2 { margin: 0 0 16px; color: #2185d0; font-size: 1.5em; text-align: center; }
+    .auth-card input { width:100%; padding:8px; margin:8px 0; border:1px solid #ccc; border-radius:4px; }
+    .auth-card button { width:100%; padding:10px; margin-top:12px; background:#21ba45; color:#fff; border:none; border-radius:4px; font-size:1em; cursor:pointer; }
+    .auth-card button:hover { background:#16ab39; }
+    .auth-card p { text-align:center; margin-top:12px; }
+    .auth-card a { color:#2185d0; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <h2>註冊</h2>
+    <input type="email" id="reg-email" placeholder="Email">
+    <input type="password" id="reg-password" placeholder="密碼 (至少 6 字元)">
+    <button id="register-btn">註 冊</button>
+    <p>已經有帳號？<a href="login.html">登入</a></p>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD4RzcUT_ctfauFgVkLDTJ5K_KKzlhSkT8",
+  authDomain: "eye-tracking-9c85c.firebaseapp.com",
+  databaseURL: "https://eye-tracking-9c85c-default-rtdb.firebaseio.com",
+  projectId: "eye-tracking-9c85c",
+  storageBucket: "eye-tracking-9c85c.firebasestorage.app",
+  messagingSenderId: "788603154690",
+  appId: "1:788603154690:web:922d8e8b5320af1c6bd21b",
+  measurementId: "G-S3N0H4K3C6"
+};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    auth.onAuthStateChanged(user => { if (user) location.replace('dashboard.html'); });
+    document.getElementById('register-btn').onclick = () => {
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-password').value;
+      if (!email || pass.length < 6) { alert('請輸入有效 Email 且密碼至少 6 字元'); return; }
+      auth.createUserWithEmailAndPassword(email, pass)
+        .then(() => location.replace('dashboard.html'))
+        .catch(e => alert('註冊失敗：' + e.message));
+    };
+  </script>
+</body>
+</html>

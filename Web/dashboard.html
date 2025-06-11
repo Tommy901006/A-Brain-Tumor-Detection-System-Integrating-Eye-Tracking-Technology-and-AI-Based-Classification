@@ -1,0 +1,102 @@
+
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>🩺 Eye Tracking Dashboard</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f4f9fd; color: #333; padding: 30px; margin: 0; }
+    .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    h1 { color:#2185d0; font-size:2em; margin:0; }
+    .btn { padding:8px 16px; border:none; border-radius:4px; cursor:pointer; color:#fff; }
+    .btn-stop { background:#db2828; }
+    .btn-stop:hover { background:#a61b1b; }
+    .btn-logout { background:#767676; margin-left:8px; }
+    .btn-logout:hover { background:#565656; }
+    .dashboard { display:grid; grid-template-columns:2fr 1fr; gap:20px; }
+    .card { background:#fff; border-radius:8px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    .label { font-weight:600; color:#1f4e79; }
+    .value { font-size:1.5em; color:#21ba45; margin-top:4px; }
+    img { max-width:800%; border-radius:10px;margin: 0 auto }
+    #eye-image { max-width:600px; height:auto; margin: 0 auto}
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+  <div class="header">
+    <h1>🩺 Eye Tracking Dashboard</h1>
+    <div>
+      <button id="stop-btn" class="btn btn-stop">停止伺服器</button>
+      <button id="logout-btn" class="btn btn-logout">登 出</button>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div>
+      <div class="card">
+        <div class="label">Class</div>
+        <div id="class" class="value">Loading...</div>
+        <div class="label">confidence</div>
+        <div id="confidence" class="value">Loading...</div>
+         <div class="label">timestamp</div>
+        <div id="timestamp" class="value">Loading...</div>
+      </div>
+      <div class="card">
+        <div class="label">即時 Eye Tracking 圖片</div>
+        <img id="eye-image" src="" alt="Eye Image">
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">IP Camera 影像</div>
+      <img id="ipcam" src="http://192.168.191.98:8090/video_feed" alt="IP Camera Feed">
+    </div>
+  </div>
+
+  <script>
+    // TODO: 同 login.html 填入相同的 Firebase config
+    const firebaseConfig = {
+  apiKey: "AIzaSyD4RzcUT_ctfauFgVkLDTJ5K_KKzlhSkT8",
+  authDomain: "eye-tracking-9c85c.firebaseapp.com",
+  databaseURL: "https://eye-tracking-9c85c-default-rtdb.firebaseio.com",
+  projectId: "eye-tracking-9c85c",
+  storageBucket: "eye-tracking-9c85c.firebasestorage.app",
+  messagingSenderId: "788603154690",
+  appId: "1:788603154690:web:922d8e8b5320af1c6bd21b",
+  measurementId: "G-S3N0H4K3C6"
+};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const dbRef = firebase.database().ref('/roboflow_results');
+
+    // 未登入導回 login.html
+    auth.onAuthStateChanged(user => {
+      if (!user) location.replace('login.html');
+    });
+
+    // 登出
+    document.getElementById('logout-btn').onclick = () => {
+      auth.signOut().then(() => location.replace('login.html'));
+    };
+
+    // 監聽即時資料
+    dbRef.on('value', snap => {
+      const data = snap.val();
+      if (!data) return;
+      document.getElementById('class').innerText = data.class;
+      document.getElementById("confidence").innerText = data.confidence.toFixed(3);
+      document.getElementById("timestamp").innerText = new Date(data.timestamp * 1000).toLocaleString();
+      document.getElementById('eye-image').src  = 'file:///D:/examples/eye.jpg?t=' + Date.now();
+    });
+
+    // 停止伺服器
+    document.getElementById('stop-btn').onclick = () => {
+      fetch('http://192.168.191.98:8090/stop', { method:'POST' })
+        .then(res => res.text()).then(msg=>alert(msg))
+        .catch(()=>alert('關閉'));
+    };
+  </script>
+</body>
+</html>
