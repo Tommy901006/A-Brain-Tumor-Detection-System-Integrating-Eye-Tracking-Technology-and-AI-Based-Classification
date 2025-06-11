@@ -70,7 +70,7 @@ def stop_server():
 def flask_thread():
     app.run(host='0.0.0.0', port=8090)
 
-# Firebase 初始化（請確認金鑰檔與 databaseURL）
+# Firebase 初始化
 cred = credentials.Certificate("eye-tracking.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://eye-tracking-9c85c-default-rtdb.firebaseio.com/'
@@ -131,7 +131,7 @@ def send_email_with_csv_and_images():
     sender_password = "trwvoyligttxqcjy"
     receiver_email = "book901006@gmail.com"
 
-    subject = "🧠 Roboflow + Gaze 推論結果報告"
+    subject = " Roboflow + Gaze 推論結果報告"
     body = "您好，附件包含辨識記錄 CSV 與所有推論時儲存的圖片，請查收。"
 
     msg = EmailMessage()
@@ -155,9 +155,9 @@ def send_email_with_csv_and_images():
             server.starttls()
             server.login(sender_email, sender_password)
             server.send_message(msg)
-        print(f"📧 Email 已成功寄出，共附加圖片 {len(list(Path(SAVE_DIR).glob('*.jpg')))} 張。")
+        print(f"Email 已成功寄出，共附加圖片 {len(list(Path(SAVE_DIR).glob('*.jpg')))} 張。")
     except Exception as e:
-        print("❌ 寄送 Email 發生錯誤：", e)
+        print(" 寄送 Email 發生錯誤：", e)
 
 # 非同步推論
 def run_inference_async(image):
@@ -173,7 +173,7 @@ def run_inference_async(image):
 
         filtered_predictions = [p for p in result.get("predictions", []) if p.get("confidence", 0) > 0.5]
         if not filtered_predictions:
-            print("⛔ 無高信心度預測，略過語音與儲存。")
+            print(" 無高信心度預測，略過語音與儲存。")
             annotated = None
             is_inferencing = False
             return
@@ -191,12 +191,12 @@ def run_inference_async(image):
         confidence_sum[first_class] += conf
 
         if first_class != last_announced_class:
-            print(f"🔊 唸出辨識結果：{first_class}")
+            print(f" 唸出辨識結果：{first_class}")
             engine.say(first_class)
             engine.runAndWait()
             last_announced_class = first_class
         else:
-            print(f"⏩ 與上次相同（{first_class}），不再唸")
+            print(f" 與上次相同（{first_class}），不再唸")
 
         timestamp = time.time()
         inference_log.append({
@@ -213,9 +213,9 @@ def run_inference_async(image):
         filename = f"{first_class}_{int(timestamp)}.jpg"
         save_path = os.path.join(SAVE_DIR, filename)
         cv2.imwrite(save_path, combo_img)
-        print(f"📷 圖片已儲存：{save_path}")
+        print(f" 圖片已儲存：{save_path}")
         cv2.imwrite(r"D:\examples\eye.jpg", combo_img)
-        print("🖼️ 已複製圖片到 D:\\examples\\eye.jpg")
+        print(" 已複製圖片到 D:\\examples\\eye.jpg")
         ref = db.reference("/roboflow_results")
         ref.set({
             "class": first_class,
@@ -234,7 +234,7 @@ def run_inference_async(image):
     except Exception as e:
         print("推論：", e)
     is_inferencing = False
-# 主程式
+
 def main():
     global stop_flag, latest_frame, annotated
     address, port = get_ip_and_port()
@@ -270,7 +270,7 @@ def main():
 
             display = cv2.resize(annotated if annotated is not None else frame, (500, 500))
             latest_frame = display.copy()
-            cv2.imshow("📷 Roboflow + Gaze Inference", display)
+            cv2.imshow(" Roboflow + Gaze Inference", display)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
@@ -295,7 +295,7 @@ def main():
         writer.writerow(["frame_idx", "x", "y"])
         for idx, pt in enumerate(all_gaze_points):
             writer.writerow([idx, pt[0], pt[1]])
-        print(f"📁 已匯出全程 gaze CSV：{csv_path}")
+        print(f" 已匯出全程 gaze CSV：{csv_path}")
 
     # 全程 gaze 熱區與熱力圖
     if all_gaze_points:
@@ -303,7 +303,7 @@ def main():
             return (int(round(pt[0]/grid)*grid), int(round(pt[1]/grid)*grid))
         rounded_points = [round_pt(pt) for pt in all_gaze_points]
         hotspot, maxcount = Counter(rounded_points).most_common(1)[0]
-        print(f"🔥 最大熱區: {hotspot}, 注視次數 {maxcount}")
+        print(f" 最大熱區: {hotspot}, 注視次數 {maxcount}")
         gaze_map = last_frame_for_gaze_map.copy() if last_frame_for_gaze_map is not None else np.ones((800,800,3), dtype=np.uint8)*255
         for i, pt in enumerate(all_gaze_points):
             cv2.circle(gaze_map, pt, 6, (0,0,255), -1)
@@ -311,7 +311,7 @@ def main():
                 cv2.line(gaze_map, all_gaze_points[i-1], pt, (255,255,0), 2)
         save_map = os.path.join(SAVE_DIR, "gaze_trajectory_all_hotspot.jpg")
         cv2.imwrite(save_map, gaze_map)
-        print(f"🗺️ gaze 迴路圖已存: {save_map}")
+        print(f" gaze 迴路圖已存: {save_map}")
 
         h, w = gaze_map.shape[:2]
         heatmap = np.zeros((h, w), dtype=np.float32)
@@ -327,11 +327,11 @@ def main():
         overlay = cv2.addWeighted(gaze_map, 0.5, heat_rgb, 0.7, 0)
         save_heat = os.path.join(SAVE_DIR, "gaze_heatmap.jpg")
         cv2.imwrite(save_heat, overlay)
-        print(f"🌡️ 熱力圖已存: {save_heat}")
+        print(f"熱力圖已存: {save_heat}")
 
 if __name__ == '__main__':
     flask_t = threading.Thread(target=flask_thread, daemon=True)
     flask_t.start()
-    print("✅ Flask MJPEG server 啟動：http://<你的IP>:8090/video_feed")
-    print("🛑 若要停止，請 POST 到 http://<你的IP>:8090/stop")
+    print("Flask MJPEG server 啟動：http://<你的IP>:8090/video_feed")
+    print(" 若要停止，請 POST 到 http://<你的IP>:8090/stop")
     main()
